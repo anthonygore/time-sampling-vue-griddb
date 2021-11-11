@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Server Monitor</title>
+  <meta name="description" content="Node and GridDB server monitor">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js" integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue-chartkick@0.6.1/dist/vue-chartkick.min.js"></script>
+  <style>
+    .resolution-select {
+      margin: 2rem 0 0 1rem;
+      padding: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div>
+    <line-chart v-if="serverData" :data="serverData"></line-chart>
+    <select name="resolution" v-model="resolution" class="resolution-select">
+      <option value="seconds">Seconds</option>
+      <option value="hours">Hours</option>
+      <option value="minutes">Minutes</option>
+    </select>
+  </div>
+</div>
+<script type="text/javascript">
+  new Vue({
+    el: "#app",
+    data: () => ({
+      serverData: [],
+      resolution: 'seconds'
+    }),
+    methods: {
+      async getServerData() {
+        const res = await fetch("/data", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ resolution: this.resolution })
+        });
+        this.serverData = await res.json();
+      }
+    },
+    watch: {
+      resolution() {
+        this.getServerData();
+      }
+    },
+    mounted () {
+      this.getServerData();
+    }
+  })
+</script>
+</body>
+</html>
